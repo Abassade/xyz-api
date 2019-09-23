@@ -1,6 +1,7 @@
 /**
- * Created by osemeodigie on 06/10/2017.
- * objective: building to scale
+ * @Author: Abass
+ * @Date: 20|09|2019
+ * @Objective: building to scale
  */
 
 const config = require('../config/settings');

@@ -1,3 +1,9 @@
+/**
+ * @Author: Abass
+ * @Date: 20|09|2019
+ * @Objective: building to scale
+ */
+
 const shortid = require('shortid');
 class Utils {
     

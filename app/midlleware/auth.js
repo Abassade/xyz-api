@@ -1,3 +1,9 @@
+/**
+ * @Author: Abass
+ * @Date: 20|09|2019
+ * @Objective: building to scale
+ */
+
 const jwt = require('jsonwebtoken');
 const Response = require('../constants/response');
 const httpStatus = require('../constants/httpStatus');
