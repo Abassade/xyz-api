@@ -1,0 +1,29 @@
+{
+  "name": "microservice-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "api": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Abass Ade",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "3.0.6",
+    "bluebird": "3.5.5",
+    "body-parser": "1.18.3",
+    "dotenv": "6.2.0",
+    "jsonwebtoken": "8.5.1",
+    "logger": "0.0.1",
+    "moment": "2.23.0",
+    "mongoose": "5.7.1",
+    "morgan": "1.9.1",
+    "redis": "2.8.0",
+    "restify": "8.4.0",
+    "restify-cors-middleware": "1.1.1",
+    "shortid": "^2.2.15",
+    "winston": "3.2.1"
+  }
+}
