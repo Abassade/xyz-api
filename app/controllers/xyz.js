@@ -10,6 +10,7 @@ const utils = require('../lib/utils');
 const service = require('../services/xyz');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const REFERRALPOINT = process.env.REFERRALPOINT || 100;
 
 class Xyz {
   /**
@@ -22,58 +23,30 @@ class Xyz {
     this.XYZService = XYZService;
   }
 
-  registerUser(req, res) {
-      
-    this.logger.info('This is just registering...');
-    let { email, password, cPassword, country, number, firstname, lastname, sponsorID} = req.body
-    if(!email || !password || !cPassword || !country || !number || !firstname || !lastname){
-        return Response.failure(res, { message: 'registration fields are required', }, httpStatus.BAD_REQUEST);
-    }
-    if(!email.includes('@')){
-        return Response.failure(res, { message: 'invalid email format', }, httpStatus.BAD_REQUEST);
-    }
-    if(password !== cPassword){
-        return Response.failure(res, { message: 'password do not match', }, httpStatus.BAD_REQUEST);
-    }
-    bcrypt.hash(password, 10, (err, hpass) => {
-        if(err){
-            return Response.failure(res, { message: 'error occured', response: err }, httpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if(!err){
-            this.XYZService.getUser({email: email})
-            .then( user =>{
-                if(user){
-                    return Response.success(res, { message: 'email already exists', response: user.email }, httpStatus.OK);
-                }
-                if(!user){
-                    req.body.password = hpass;
-                    req.body.cPassword = hpass;
-                    this.XYZService.saveUser(req.body)
-                .then(async user =>{
-                    let data = {
-                        user_id: user._id,
-                        full_name: `${user.firstname} ${user.lastname}`,
-                        email: user.email
-                    }
-                    // create user dashboard here!!!
-                    let dashboardData = await utils.userDashboradData(req.body);
-                    this.XYZService.saveUserProfile(dashboardData)
-                    .then( resp => {
-                        return Response.success(res, {
-                            message: 'successfully registered user',
-                            response: data
-                        }, httpStatus.CREATED);
-                    }).catch( error =>{
-                        return Response.failure(res, { message: 'cannot create profile', response: error }, httpStatus.INTERNAL_SERVER_ERROR);
-                    })
-                }).catch(error =>{
-                    return Response.failure(res, { message: 'unable to register user', response: error }, httpStatus.INTERNAL_SERVER_ERROR);
-                })
-     
-                }
-            })
-        }
+  registerUser(req, res){
+    let { a } = req.query;
+    if(a !== undefined){
+    this.register(req, res)
+    .then(resp =>{
+        this.XYZService.getProfile({userCode: a})
+        .then( user =>{
+            if(!user){
+                return this.logger.info(`the referral code is not familiar -->${a}`);
+            }
+            let { referralBonus } = user;
+            referralBonus += REFERRALPOINT;
+            this.XYZService.updateProfile({userCode: a}, {referralBonus})
+            .then( resp => this.logger.info('sucessfully rewarded with referral link!!!'))
+            .catch( err => this.logger.info(err));
+        })
     });
+    }
+    else{
+        this.register(req, res)
+        .then( resp => this.logger.info('the process is successful'))
+        .catch( err => this.logger.info(err));
+    }
+      
   }
 
   LoginUser(req, res) {
@@ -139,6 +112,63 @@ class Xyz {
     catch(error){
         return console.info('error while finding user from (isUser)', error);
     }
+  }
+
+  register( req, res){
+    return new Promise( (resolve, reject)=>{
+        let { email, password, cPassword, country, number, firstname, lastname, sponsorID} = req.body
+        if(!email || !password || !cPassword || !country || !number || !firstname || !lastname){
+            return Response.failure(res, { message: 'registration fields are required', }, httpStatus.BAD_REQUEST);
+        }
+        if(!email.includes('@') || !email.includes('.')){
+            return Response.failure(res, { message: 'invalid email format', }, httpStatus.BAD_REQUEST);
+        }
+        if(password !== cPassword){
+            return Response.failure(res, { message: 'password do not match', }, httpStatus.BAD_REQUEST);
+        }
+        bcrypt.hash(password, 10, (err, hpass) => {
+            if(err){
+                return Response.failure(res, { message: 'error occured', response: err }, httpStatus.INTERNAL_SERVER_ERROR);
+            }
+            if(!err){
+                this.XYZService.getUser({email})
+                .then( user =>{
+                    if(user){
+                        return Response.success(res, { message: 'email already exists', response: user.email }, httpStatus.OK);
+                    }
+                    if(!user){
+                        req.body.password = hpass;
+                        req.body.cPassword = hpass;
+                        this.XYZService.saveUser(req.body)
+                    .then(async user => {
+                        let data = {
+                            user_id: user._id,
+                            full_name: `${user.firstname} ${user.lastname}`,
+                            email: user.email
+                        }
+                        // create user dashboard here!!!
+                        let dashboardData = await utils.userDashboradData(req.body);
+                        this.XYZService.saveUserProfile(dashboardData)
+                        .then( resp => {
+                            resolve(resp);
+                            return Response.success(res, {
+                                message: 'successfully registered user',
+                                response: data
+                            }, httpStatus.CREATED);
+                        }).catch( error => {
+                            reject(error);
+                            return Response.failure(res, { message: 'cannot create profile', response: error }, httpStatus.INTERNAL_SERVER_ERROR);
+                        })
+                    }).catch(error =>{
+                        reject(error);
+                        return Response.failure(res, { message: 'unable to register user', response: error }, httpStatus.INTERNAL_SERVER_ERROR);
+                    })
+        
+                    }
+                })
+            }
+        });
+    });
   }
 }
 

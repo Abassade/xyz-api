@@ -40,6 +40,16 @@ class Xyz {
     this.logger.info('IN-COMING PARAM', param);
     return this.mongoClient.get(param);
   }
+
+  getProfile(param) {
+    this.logger.info('IN-COMING PARAM', param);
+    return this.mongoClientDashborad.get(param);
+  }
+
+  updateProfile(param, data) {
+    this.logger.info('IN-COMING PARAM', param);
+    return this.mongoClientDashborad.update(param, data);
+  }
   
   getUserProfile(param) {
     this.logger.info('IN-COMING PARAM', param);

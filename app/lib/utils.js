@@ -22,7 +22,7 @@ class Utils {
 		let { firstname, lastname, email, number } = req_body;
 		let fullname = `${firstname[0].toUpperCase()+firstname.slice(1).toLowerCase()} ${lastname[0].toUpperCase()+lastname.slice(1).toLowerCase()}`
 		let userCode = shortid.generate();
-		let uniqueUrl = `localhost:3000/user/${userCode}`
+		let uniqueUrl = `localhost:3000/register?a=${userCode}`
 		return {
 			fullname,
 			userCode,
